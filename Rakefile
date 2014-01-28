@@ -37,6 +37,10 @@ def upload_to_s3(filename, bucket_name)
   puts colorize(obj.public_url, :blue)
 end
 
+def compress_js(filename)
+  sh "uglifyjs #{filename}.js -o #{filename}.min.js --source-map #{filename}.min.js.map -p relative -c -m"
+end
+
 
 task :clean => [] do
   sh "rm -rf ~*"
@@ -60,17 +64,26 @@ task :dependencies => [:dev_env] do
 end
 
 task :compress_js do
-  files = ["libs/secret-rest-client", "libs/secret-data-table"]
+  files = ["libs/secret-rest-client/secret-rest-client", "libs/secret-data-table/secret-data-table"]
   files.each { |filename|
     sh "uglifyjs #{filename}.js -o #{filename}.min.js --source-map #{filename}.min.js.map -p relative -c -m"
   }
 end
 
 task :upload => [:compress_js] do
-  files = ["libs/secret-rest-client.min", "libs/secret-data-table.min"]
+end
+
+task :upload => [:compress_js] do
+  files = [
+    "libs/secret-rest-client/enc-base64.min.js",
+    "libs/secret-rest-client/hmac-sha256.min.js",
+    "libs/secret-rest-client/secret-rest-client.min.js",
+    "libs/secret-rest-client/secret-rest-client.min.js.map",
+    "libs/secret-data-table/secret-data-table.min.js",
+    "libs/secret-data-table/secret-data-table.min.js.map",
+  ]
   files.each { |filename|
-    upload_to_s3(filename + ".js", "weblibraries")
-    upload_to_s3(filename + ".js.map", "weblibraries")
+    upload_to_s3(filename, "weblibraries")
   }
 end
 
