@@ -82,9 +82,6 @@ task :compress_js do
 end
 
 task :upload => [:compress_js] do
-end
-
-task :upload => [:compress_js] do
   files = [
     "libs/secret-rest-client/enc-base64.min.js",
     "libs/secret-rest-client/hmac-sha256.min.js",
@@ -92,6 +89,19 @@ task :upload => [:compress_js] do
     "libs/secret-rest-client/secret-rest-client.min.js.map",
     "libs/secret-data-table/secret-data-table.min.js",
     "libs/secret-data-table/secret-data-table.min.js.map",
+  ]
+  files.each { |filename|
+    upload_to_s3(filename, "weblibraries")
+  }
+end
+
+task :upload_bootstrap => [:compress_js] do
+  # netdna.bootstrapcdn.com/bootstrap/3.1.0
+  files = [
+    "libs/bootstrap/bootstrap-theme.min.css",
+    "libs/bootstrap/bootstrap.min.css",
+    "libs/bootstrap/bootstrap.min.js",
+    "libs/bootstrap/font-awesome.css",
   ]
   files.each { |filename|
     upload_to_s3(filename, "weblibraries")

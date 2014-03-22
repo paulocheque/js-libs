@@ -1,3 +1,4 @@
 .DS_Store
-*.min.js
+libs/secret-data-table/*.min.js
+libs/secret-rest-client/*.min.js
 *.min.js.map
