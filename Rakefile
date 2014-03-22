@@ -17,6 +17,15 @@ def colorize(text, color)
   end
 end
 
+CONTENT_TYPES = {
+  ".png" => "image/png",
+  ".jpg" => "image/jpeg",
+  ".gif" => "image/gif",
+  ".js" => "application/x-javascript",
+  ".css" => "text/css",
+  ".map" => "application/octet-stream"
+}
+
 def upload_to_s3(filename, bucket_name)
   puts colorize("Uploading to S3: #{filename}", :blue)
   require 'aws-sdk' # gem install aws-sdk
@@ -32,7 +41,9 @@ def upload_to_s3(filename, bucket_name)
   end
   key = File.basename(filename)
   obj = bucket.objects[key]
-  obj.write(:file => filename, :acl => :public_read)
+  obj.write(:file => filename, :acl => :public_read,
+      :cache_control => "max-age=31536000", :expires => "Thu, 31 Dec 2015 23:59:59 GM",
+      :content_type => CONTENT_TYPES[File.extname(filename)])
   puts colorize("Upload finished", :green)
   puts colorize(obj.public_url, :blue)
 end
