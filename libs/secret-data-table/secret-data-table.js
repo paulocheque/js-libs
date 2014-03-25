@@ -99,6 +99,12 @@ $(document).ready(function() {
 
         var weakThis = this;
 
+        this.serializeFormData = function(originalFormData) {
+            var formData = {};
+            originalFormData.map(function(x){ formData[x.name] = htmlEscape(x.value); });
+            return formData;
+        }
+
         this._createCreateButton = function() {
             var button = $("<button/>").attr("type", "button").attr("class", "btn btn-primary").html('<span class="glyphicon glyphicon-pencil"> New</span>');
             var onclick = function() {
@@ -106,8 +112,7 @@ $(document).ready(function() {
                 form.on('submit', function (e) {
                     e.preventDefault();
                     if (weakThis.settings.onCreate) {
-                        var formData = {};
-                        $(this).serializeArray().map(function(x){ formData[x.name] = htmlEscape(x.value); });
+                        var formData = weakThis.serializeFormData($(this).serializeArray());
                         weakThis.settings.onCreate(weakThis, formData);
                     }
                 });
@@ -132,8 +137,7 @@ $(document).ready(function() {
                 form.on('submit', function (e) {
                     e.preventDefault();
                     if (weakThis.settings.onUpdate) {
-                        var formData = {};
-                        $(this).serializeArray().map(function(x){ formData[x.name] = htmlEscape(x.value); });
+                        var formData = weakThis.serializeFormData($(this).serializeArray());
                         weakThis.settings.onUpdate(weakThis, id, formData);
                     }
                 });
