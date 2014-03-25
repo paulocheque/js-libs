@@ -116,6 +116,13 @@ client.count();
             this._request(method, url, null, success, error);
         };
 
+        this.readOrCreate = function(mainData, defaultsData, success, error) {
+            var method = "POST";
+            data = {main:mainData, defaults:defaultsData};
+            var url = this.apiPrefix + "/try-read";
+            this._request(method, url, data, success, error);
+        };
+
         this.update = function(identifier, data, success, error) {
             var method = "PUT";
             var url = this.apiPrefix + "/" + identifier;
