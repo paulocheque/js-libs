@@ -28,6 +28,7 @@ $(document).ready(function() {
         onTableLoad: function(table){},
         onCreate: function(table, data){ table.createLine(some_id, data); },
         onUpdate: function(table, id, data){ table.updateLine(id, data); },
+        onCreateOrUpdate: function(table, id, data){ table.createOrUpdateLine(data._id || id, data); },
         onDelete: function(table, id, data){ table.deleteLine(id, data); },
         onTableChange: function(table){},
         onModalReady: function(modal){}
@@ -83,6 +84,7 @@ $(document).ready(function() {
             onTableLoad: function(table){},
             onCreate: function(table, data){ table.createLine(data._id, data); },
             onUpdate: function(table, id, data){ table.updateLine(data); },
+            onCreateOrUpdate: function(table, id, data){ table.createOrUpdateLine(data._id || id, data); },
             onDelete: function(table, id, data){ table.deleteLine(data); },
             onTableChange: function(table){},
             onModalReady: function(modal){}
@@ -210,6 +212,16 @@ $(document).ready(function() {
             }
             if (weakThis.settings.onTableChange) {
                 weakThis.settings.onTableChange(weakThis);
+            }
+        }
+
+        this.createOrUpdateLine = function(id, data) {
+            $("#modal-" + id).modal('hide');
+            var line = weakThis.settings.table.find("#line-" + id);
+            if (line.length == 0) {
+                weakThis.createLine(id, data);
+            } else {
+                weakThis.updateLine(id, data);
             }
         }
 
