@@ -8,7 +8,7 @@ Example of Usage:
 <script language="JavaScript">
 $(document).ready(function() {
     var secretTable = new SecretDataTable({
-        table: $("#myTable"),
+        table: $("#table-list"),
         columns: [
             function(data, id) { return linkify(data.description) },
             function(data, id) { return data.tags },
@@ -20,13 +20,13 @@ $(document).ready(function() {
                 return button;
             },
         ],
-        formCreate: $("#myForm"),
-        formUpdate: $("#myForm"),
+        formCreate: $("#form-create"),
+        formUpdate: $("#form-create"),
         create: true,
         update: true,
         del: true,
         onTableLoad: function(table){},
-        onCreate: function(table, data){ table.createLine(some_id, data); },
+        onCreate: function(table, data){ table.createLine(new Date().getTime(), data); },
         onUpdate: function(table, id, data){ table.updateLine(id, data); },
         onCreateOrUpdate: function(table, id, data){ table.createOrUpdateLine(data._id || id, data); },
         onDelete: function(table, id, data){ table.deleteLine(id, data); },
@@ -178,13 +178,13 @@ $(document).ready(function() {
                 col.append(text);
                 newRow.append(col);
             }
-            if (weakThis.settings.update == true && weakThis.settings.formUpdate) {
+            if (weakThis.settings.update === true && weakThis.settings.formUpdate) {
                 var button = weakThis._createEditButton(id, data);
                 var col = $("<td>");
                 col.append(button);
                 newRow.append(col);
             }
-            if (weakThis.settings.del == true) {
+            if (weakThis.settings.del === true) {
                 var form = weakThis._createDeleteForm(id, data);
                 var col = $("<td>");
                 col.append(form);
