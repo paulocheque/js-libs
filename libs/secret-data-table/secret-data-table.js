@@ -151,11 +151,20 @@ $(document).ready(function() {
             return form;
         }
 
+        this._getColumnText = function(i, data, id) {
+            try {
+                return weakThis.settings.columns[i](data, id);
+            } catch(e) {
+                console.error(e);
+                return "?";
+            }
+        }
+
         this.createLine = function(id, data) {
             $("#modal-new").modal('hide');
             var newRow = $('<tr id="line-' + id + '">');
             for (var i in weakThis.settings.columns) {
-                var text = weakThis.settings.columns[i](data, id);
+                var text = weakThis._getColumnText(i, data, id);
                 var col = $("<td>");
                 col.append(text);
                 newRow.append(col);
@@ -183,7 +192,7 @@ $(document).ready(function() {
             var line = weakThis.settings.table.find("#line-" + id);
             var columns = line.find("td");
             for (var i in weakThis.settings.columns) {
-                var text = weakThis.settings.columns[i](data, id);
+                var text = weakThis._getColumnText(i, data, id);
                 var column = columns.eq(i);
                 column.html(text);
                 if (typeof column.effect === 'function') {
