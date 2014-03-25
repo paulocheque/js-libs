@@ -22,6 +22,10 @@ client.del("111");
 client.count();
 */
 (function() {
+    htmlEscape = function(text) {
+        return text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    };
+
     var SecretRestClient = function(privateKey, publicKey, apiPrefix, apiVersion) {
         this.privateKey = privateKey;
         this.publicKey = publicKey;
@@ -87,6 +91,13 @@ client.count();
                 data: authenticatedData,
                 beforeSend: function (xhr) { xhr.setRequestHeader("Authorization", "HMAC-SHA256 " + signature); }
             }).done($.proxy(success, this)).fail($.proxy(error, this));
+        };
+
+        // $(this).serializeArray();
+        this.serializeFormData = function(originalFormData) {
+            var formData = {};
+            originalFormData.map(function(x){ formData[x.name] = htmlEscape(x.value); });
+            return formData;
         };
 
         this.list = function(initial, amount, success, error) {
