@@ -23,7 +23,7 @@ $(document).ready(function() {
         formCreate: $("#myForm"),
         formUpdate: $("#myForm"),
         create: true,
-        edit: true,
+        update: true,
         del: true,
         onTableLoad: function(table){},
         onCreate: function(table, data){ table.createLine(some_id, data); },
@@ -76,9 +76,9 @@ $(document).ready(function() {
             table: null,
             columns: [],
             formCreate: $("<input/>"),
-            formEdit: $("<input/>"),
+            formUpdate: $("<input/>"),
             create: true,
-            edit: true,
+            update: true,
             del: true,
             onTableLoad: function(table){},
             onCreate: function(table, data){ table.createLine(data._id, data); },
@@ -87,6 +87,13 @@ $(document).ready(function() {
             onTableChange: function(table){},
             onModalReady: function(modal){}
         }, options);
+        // Compatibility
+        if (this.settings.formEdit) {
+            this.settings.formUpdate = this.settings.formEdit;
+        }
+        if (this.settings.edit) {
+            this.settings.update = this.settings.edit;
+        }
 
         var weakThis = this;
 
@@ -116,7 +123,7 @@ $(document).ready(function() {
         this._createEditButton = function(id, data) {
             var button = $("<button/>").attr("type", "button").attr("class", "btn btn-default btn-xs").html('<span class="glyphicon glyphicon-edit"></span>');
             var onclick = function() {
-                var form = weakThis.settings.formEdit.clone(false);
+                var form = weakThis.settings.formUpdate.clone(false);
                 for (var key in data) {
                     form.find("[name='" + key + "']").val(data[key]);
                 }
@@ -169,7 +176,7 @@ $(document).ready(function() {
                 col.append(text);
                 newRow.append(col);
             }
-            if (weakThis.settings.edit == true && weakThis.settings.formEdit) {
+            if (weakThis.settings.update == true && weakThis.settings.formUpdate) {
                 var button = weakThis._createEditButton(id, data);
                 var col = $("<td>");
                 col.append(button);
