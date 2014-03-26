@@ -32,6 +32,15 @@
                 <button type="submit" class="btn btn-primary">Save</button>
             </form>
 
+            <button type="button" class="btn btn-default" id="create">Create</button>
+            <button type="button" class="btn btn-default" id="create-or-update">Create or Update</button>
+            <button type="button" class="btn btn-default" id="update">Update</button>
+            <button type="button" class="btn btn-default" id="delete">Delete</button>
+            <button type="button" class="btn btn-default" id="get-lines">Get Lines</button>
+            <button type="button" class="btn btn-default" id="get-lines-ids">Get Lines Ids</button>
+            <button type="button" class="btn btn-default" id="get-column">Get Column</button>
+            <button type="button" class="btn btn-default" id="clear">Clear</button>
+
             <table id="table-list" class="table table-striped table-hover table-condensed table-responsive tablesorter">
                 <thead>
                     <tr>
@@ -89,19 +98,35 @@
                 onUpdate: function(table, id, data){ table.updateLine(id, data); },
                 onCreateOrUpdate: function(table, id, data){ table.createOrUpdateLine(data._id || id, data); },
                 onDelete: function(table, id, data){ table.deleteLine(id, data); },
-                onTableChange: function(table){
-                    console.log(table.getLines().length + " LINES");
-                    console.log(table.getLines());
-                    console.log("COLUMN 0 (" + table.getColumn(0).length + ")");
-                    console.log(table.getColumn(0));
-                    console.log("COLUMN 50 (" + table.getColumn(0).length + ")");
-                    console.log(table.getColumn(50));
-                },
+                onTableChange: function(table){},
                 onModalReady: function(modal){}
             });
-            secretTable.createLine("123", {description:"test", tags:"abc"})
-            secretTable.createOrUpdateLine("123", {description:"test2", tags:"abc2"})
-            secretTable.createOrUpdateLine("1234", {description:"test3", tags:"abc3"})
+
+            $("#create").on('click', function() {
+                secretTable.createLine("123", {description:"test", tags:"abc"})
+            });
+            $("#create-or-update").on('click', function() {
+                secretTable.createOrUpdateLine("123", {description:"test2", tags:"abc2"})
+                secretTable.createOrUpdateLine("1234", {description:"test3", tags:"abc3"})
+            });
+            $("#update").on('click', function() {
+                secretTable.createOrUpdateLine("1234", {description:"test4", tags:"abc4"})
+            });
+            $("#delete").on('click', function() {
+                secretTable.deleteLine("1234")
+            });
+            $("#get-lines").on('click', function() {
+                console.log(secretTable.getLines())
+            });
+            $("#get-lines-ids").on('click', function() {
+                console.log(secretTable.getLinesIds())
+            });
+            $("#get-column").on('click', function() {
+                console.log(secretTable.getColumn(0))
+            });
+            $("#clear").on('click', function() {
+                console.log(secretTable.clear())
+            });
         });
     </script>
 

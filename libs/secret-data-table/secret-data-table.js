@@ -237,8 +237,19 @@ $(document).ready(function() {
             }
         }
 
-        this.getLines = function(index) {
+        this.getLines = function() {
             return weakThis.settings.table.find("tr[id^=line-]");
+        }
+
+        this.getLinesIds = function() {
+            var ids = [];
+            var lines = weakThis.getLines();
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+                the_id = line.id.replace("line-", "");
+                ids.push(the_id);
+            }
+            return ids;
         }
 
         this.getColumn = function(index) {
@@ -254,6 +265,14 @@ $(document).ready(function() {
                 }
             }
             return columns;
+        }
+
+        this.clear = function() {
+            var ids = weakThis.getLinesIds();
+            for (var i = 0; i < ids.length; i++) {
+                var line = ids[i];
+                weakThis.deleteLine(line);
+            }
         }
 
         if (weakThis.settings.create === true && weakThis.settings.formCreate) {
