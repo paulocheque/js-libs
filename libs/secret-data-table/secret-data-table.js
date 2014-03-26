@@ -237,6 +237,25 @@ $(document).ready(function() {
             }
         }
 
+        this.getLines = function(index) {
+            return weakThis.settings.table.find("tr[id^=line-]");
+        }
+
+        this.getColumn = function(index) {
+            var lines = weakThis.getLines();
+            var columns = [];
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+                if (line) {
+                    var column = line.cells[index]
+                    if (column) {
+                        columns.push(column.innerText);
+                    }
+                }
+            }
+            return columns;
+        }
+
         if (weakThis.settings.create === true && weakThis.settings.formCreate) {
             var button = weakThis._createCreateButton();
             var newHead = $("<thead/>").append(button).append("<br/><br/>");

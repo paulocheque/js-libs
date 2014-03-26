@@ -58,8 +58,11 @@
     <script src="http://weblibraries.s3.amazonaws.com/jquery.tablesorter.min.js"></script>
     <script src="http://weblibraries.s3.amazonaws.com/hmac-sha256.min.js"></script>
     <script src="http://weblibraries.s3.amazonaws.com/enc-base64.min.js"></script>
+    <!-- PRODUCTION -->
     <script src="http://weblibraries.s3.amazonaws.com/secret-rest-client.min.js"></script>
     <script src="http://weblibraries.s3.amazonaws.com/secret-data-table.min.js"></script>
+    <!-- DEV -->
+    <script src="secret-data-table.js"></script>
 
     <script language="JavaScript">
         $(document).ready(function() {
@@ -86,7 +89,14 @@
                 onUpdate: function(table, id, data){ table.updateLine(id, data); },
                 onCreateOrUpdate: function(table, id, data){ table.createOrUpdateLine(data._id || id, data); },
                 onDelete: function(table, id, data){ table.deleteLine(id, data); },
-                onTableChange: function(table){},
+                onTableChange: function(table){
+                    console.log(table.getLines().length + " LINES");
+                    console.log(table.getLines());
+                    console.log("COLUMN 0 (" + table.getColumn(0).length + ")");
+                    console.log(table.getColumn(0));
+                    console.log("COLUMN 50 (" + table.getColumn(0).length + ")");
+                    console.log(table.getColumn(50));
+                },
                 onModalReady: function(modal){}
             });
             secretTable.createLine("123", {description:"test", tags:"abc"})
