@@ -50,6 +50,7 @@ end
 
 def compress_js(filename)
   sh "uglifyjs #{filename}.js -o #{filename}.min.js --source-map #{filename}.min.js.map -p relative -c -m"
+  return "#{filename}.min.js"
 end
 
 
@@ -74,14 +75,14 @@ task :dependencies => [:dev_env] do
   sh "rvm use ruby-1.9.3-p194" # aws-sdk is not working with Ruby 2.0.0
 end
 
-task :compress_js do
+task :compress_libs_js do
   files = ["libs/secret-rest-client/secret-rest-client", "libs/secret-data-table/secret-data-table"]
   files.each { |filename|
-    sh "uglifyjs #{filename}.js -o #{filename}.min.js --source-map #{filename}.min.js.map -p relative -c -m"
+    compress_js(filename)
   }
 end
 
-task :upload => [:compress_js] do
+task :upload => [:compress_libs_js] do
   files = [
     "libs/secret-rest-client/enc-base64.min.js",
     "libs/secret-rest-client/hmac-sha256.min.js",
@@ -95,7 +96,7 @@ task :upload => [:compress_js] do
   }
 end
 
-task :upload_bootstrap => [:compress_js] do
+task :upload_bootstrap => [] do
   # netdna.bootstrapcdn.com/bootstrap/3.1.0
   files = [
     "libs/bootstrap/bootstrap-theme.min.css",
@@ -106,6 +107,15 @@ task :upload_bootstrap => [:compress_js] do
   files.each { |filename|
     upload_to_s3(filename, "weblibraries")
   }
+end
+
+task :upload_file => [] do
+  # rake upload_file file=filepath
+  filename = ENV["file"]
+  if filename.end_with?(".js") and not filename.end_with?("min.js")
+    filename = compress_js(filename.sub(".js", ""))
+  end
+  upload_to_s3(filename, "weblibraries")
 end
 
 task :default => [:compress_js]
