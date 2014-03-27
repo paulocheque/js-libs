@@ -7,10 +7,15 @@
     <link rel="stylesheet" href="http://weblibraries.s3.amazonaws.com/jquery.pnotify.default.css">
     <link rel="stylesheet" href="http://weblibraries.s3.amazonaws.com/jquery.pnotify.default.icons.css">
     <style type="text/css">
-      body {
-        padding-top: 60px;
-        padding-bottom: 40px;
-      }
+        body {
+            padding-top: 60px;
+            padding-bottom: 40px;
+        }
+        .progress { position:relative; width:300px; border: 1px solid #ddd; border-radius: 3px; margin-top:5px; margin-bottom:5px; }
+        .bar { background-color: #B4F5B4; width:0%; height:20px; border-radius: 3px; }
+        .bar-error { background-color: #FF0000; }
+        .percent { position:absolute; display:inline-block; top:3px; left:48%; }
+
     </style>
 
     <link href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
@@ -28,6 +33,14 @@
                 <div class="form-group">
                     <label for="tags">Tags</label>
                     <input id="tags" name="tags" type="text" placeholder="tag1,tag2,tag3" class="input-lg form-control"/>
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </form>
+
+            <form id="form-upload-images" role="form" class="form form-horizontal" style="display:none;">
+                <div class="form-group">
+                    <label for="file">File</label>
+                    <input id="file" name="file" type="file" class="input-lg form-control" required=""/>
                 </div>
                 <button type="submit" class="btn btn-primary">Save</button>
             </form>
@@ -65,6 +78,7 @@
     <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
     <script src="http://weblibraries.s3.amazonaws.com/jquery.pnotify.min.js"></script>
     <script src="http://weblibraries.s3.amazonaws.com/jquery.tablesorter.min.js"></script>
+    <script src="http://weblibraries.s3.amazonaws.com/jquery.form.min.js"></script>
     <script src="http://weblibraries.s3.amazonaws.com/hmac-sha256.min.js"></script>
     <script src="http://weblibraries.s3.amazonaws.com/enc-base64.min.js"></script>
     <!-- PRODUCTION -->
@@ -81,11 +95,7 @@
                     function(data, id) { return data.description },
                     function(data, id) { return data.tags },
                     function(data, id) {
-                        var button = $("<button/>");
-                        button.click(function() {
-                            // custom action
-                        });
-                        return button;
+                        return createUploadFilesButton($("#form-upload-images"));
                     },
                 ],
                 formCreate: $("#form-create"),

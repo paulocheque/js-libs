@@ -3,6 +3,11 @@ http://learn.jquery.com/plugins/basic-plugin-creation/
 
 Example of Usage:
 
+.progress { position:relative; width:300px; border: 1px solid #ddd; border-radius: 3px; margin-top:5px; margin-bottom:5px; }
+.bar { background-color: #B4F5B4; width:0%; height:20px; border-radius: 3px; }
+.bar-error { background-color: #FF0000; }
+.percent { position:absolute; display:inline-block; top:3px; left:48%; }
+
 <script src="/static/js/jquery-2.0.3.min.js"></script>
 <script src="/static/js/secret-data-table.js"></script>
 <script language="JavaScript">
@@ -72,6 +77,112 @@ $(document).ready(function() {
         return modal;
     };
 
+    createCreateButton = function(table) {
+        var button = $("<button/>").attr("type", "button").attr("class", "btn btn-primary").html('<span class="glyphicon glyphicon-pencil"> New</span>');
+        var onclick = function() {
+            var form = table.settings.formCreate.clone(false);
+            form.on('submit', function (e) {
+                e.preventDefault();
+                if (table.settings.onCreate) {
+                    var formData = table.serializeFormData($(this).serializeArray());
+                    table.settings.onCreate(table, formData);
+                }
+            });
+
+            var modal = createModal("new", "New record", form);
+            modal.modal({});
+            if (table.settings.onModalReady) {
+                table.settings.onModalReady(modal);
+            }
+        };
+        button.click(onclick);
+        return button;
+    };
+
+    createUpdateButton = function(table, id, data) {
+        var button = $("<button/>").attr("type", "button").attr("class", "btn btn-default btn-xs").html('<span class="glyphicon glyphicon-edit"></span>');
+        var onclick = function() {
+            var form = table.settings.formUpdate.clone(false);
+            for (var key in data) {
+                form.find("[name='" + key + "']").val(data[key]);
+            }
+            form.on('submit', function (e) {
+                e.preventDefault();
+                if (table.settings.onUpdate) {
+                    var formData = table.serializeFormData($(this).serializeArray());
+                    table.settings.onUpdate(table, id, formData);
+                }
+            });
+
+            var modal = createModal(id, "Editing <small>" + id + "</small>", form);
+            modal.modal({});
+            if (table.settings.onModalReady) {
+                table.settings.onModalReady(modal);
+            }
+        };
+        button.click(onclick);
+        return button;
+    };
+
+    createDeleteForm = function(table, id, data) {
+        var form = $("<form>").attr("method", "delete").attr("class", "form-delete");
+        form.append('<button type="submit" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-trash"></span></button>');
+        form.on('submit', function (e) {
+            e.preventDefault();
+            if (table.settings.onDelete) {
+                table.settings.onDelete(table, id, data);
+            }
+        });
+        return form;
+    };
+
+    createUploadFilesButton = function(form, action) {
+        var button = $("<button/>").attr("type", "button").attr("class", "btn btn-default btn-xs").html('<span class="fa fa-picture-o"></span>');
+        var onclick = function() {
+            form = form.clone(false);
+            form.attr("enctype", "multipart/form-data");
+            if (action) {
+                form.attr("action", action);
+            }
+            var bar = $("<div/>").attr("class", "progress").append($("<div/>").attr("class", "bar")).append($("<div/>").attr("class", "percent"));
+            form.css("display", "block");
+            var div = $("<div/>").append(form).append($("<p/>").append(bar));
+            var modal = createModal("upload-images", "Upload images", div);
+            form.ajaxForm({
+                beforeSend: function() {
+                    var percentVal = '0%';
+                    var bar = $(".bar");
+                    bar.width(percentVal);
+                    var percent = $(".percent");
+                    percent.html(percentVal);
+                },
+                uploadProgress: function(event, position, total, percentComplete) {
+                    var percentVal = percentComplete + '%';
+                    var bar = $(".bar");
+                    bar.width(percentVal);
+                    var percent = $(".percent");
+                    percent.html(percentVal);
+                },
+                success: function(response) {
+                    var percentVal = '100%';
+                    var bar = $(".bar");
+                    bar.width(percentVal);
+                    var percent = $(".percent");
+                    percent.html(response);
+                    modal.modal('hide');
+                },
+                error: function(response) {
+                    var percent = $(".percent");
+                    percent.html(response['statusText']);
+                    $(".bar").addClass("bar-error");
+                }
+            });
+            modal.modal({});
+        };
+        button.click(onclick);
+        return button;
+    };
+
     var SecretDataTable = function(options) {
         this.settings = $.extend({
             table: null,
@@ -105,65 +216,6 @@ $(document).ready(function() {
             return formData;
         }
 
-        this._createCreateButton = function() {
-            var button = $("<button/>").attr("type", "button").attr("class", "btn btn-primary").html('<span class="glyphicon glyphicon-pencil"> New</span>');
-            var onclick = function() {
-                var form = weakThis.settings.formCreate.clone(false);
-                form.on('submit', function (e) {
-                    e.preventDefault();
-                    if (weakThis.settings.onCreate) {
-                        var formData = weakThis.serializeFormData($(this).serializeArray());
-                        weakThis.settings.onCreate(weakThis, formData);
-                    }
-                });
-
-                var modal = createModal("new", "New record", form);
-                modal.modal({});
-                if (weakThis.settings.onModalReady) {
-                    weakThis.settings.onModalReady(modal);
-                }
-            };
-            button.click(onclick);
-            return button;
-        };
-
-        this._createEditButton = function(id, data) {
-            var button = $("<button/>").attr("type", "button").attr("class", "btn btn-default btn-xs").html('<span class="glyphicon glyphicon-edit"></span>');
-            var onclick = function() {
-                var form = weakThis.settings.formUpdate.clone(false);
-                for (var key in data) {
-                    form.find("[name='" + key + "']").val(data[key]);
-                }
-                form.on('submit', function (e) {
-                    e.preventDefault();
-                    if (weakThis.settings.onUpdate) {
-                        var formData = weakThis.serializeFormData($(this).serializeArray());
-                        weakThis.settings.onUpdate(weakThis, id, formData);
-                    }
-                });
-
-                var modal = createModal(id, "Editing <small>" + id + "</small>", form);
-                modal.modal({});
-                if (weakThis.settings.onModalReady) {
-                    weakThis.settings.onModalReady(modal);
-                }
-            };
-            button.click(onclick);
-            return button;
-        };
-
-        this._createDeleteForm = function(id, data) {
-            var form = $("<form>").attr("method", "delete").attr("class", "form-delete");
-            form.append('<button type="submit" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-trash"></span></button>');
-            form.on('submit', function (e) {
-                e.preventDefault();
-                if (weakThis.settings.onDelete) {
-                    weakThis.settings.onDelete(weakThis, id, data);
-                }
-            });
-            return form;
-        }
-
         this._getColumnText = function(i, data, id) {
             try {
                 return weakThis.settings.columns[i](data, id);
@@ -183,13 +235,13 @@ $(document).ready(function() {
                 newRow.append(col);
             }
             if (weakThis.settings.update === true && weakThis.settings.formUpdate) {
-                var button = weakThis._createEditButton(id, data);
+                var button = createUpdateButton(weakThis, id, data);
                 var col = $("<td>");
                 col.append(button);
                 newRow.append(col);
             }
             if (weakThis.settings.del === true) {
-                var form = weakThis._createDeleteForm(id, data);
+                var form = createDeleteForm(weakThis, id, data);
                 var col = $("<td>");
                 col.append(form);
                 newRow.append(col);
@@ -276,7 +328,7 @@ $(document).ready(function() {
         }
 
         if (weakThis.settings.create === true && weakThis.settings.formCreate) {
-            var button = weakThis._createCreateButton();
+            var button = createCreateButton(weakThis);
             var newHead = $("<thead/>").append(button).append("<br/><br/>");
             weakThis.settings.table.prepend(newHead);
         }
