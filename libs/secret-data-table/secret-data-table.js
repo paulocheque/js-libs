@@ -84,7 +84,7 @@ $(document).ready(function() {
             form.on('submit', function (e) {
                 e.preventDefault();
                 if (table.settings.onCreate) {
-                    var formData = table.serializeFormData($(this).serializeArray());
+                    var formData = table.serializeFormData($(this).serializeArray(), table.settings.htmlFields);
                     table.settings.onCreate(table, formData);
                 }
             });
@@ -109,7 +109,7 @@ $(document).ready(function() {
             form.on('submit', function (e) {
                 e.preventDefault();
                 if (table.settings.onUpdate) {
-                    var formData = table.serializeFormData($(this).serializeArray());
+                    var formData = table.serializeFormData($(this).serializeArray(), table.settings.htmlFields);
                     table.settings.onUpdate(table, id, formData);
                 }
             });
@@ -192,6 +192,7 @@ $(document).ready(function() {
             create: true,
             update: true,
             del: true,
+            htmlFields: [],
             onTableLoad: function(table){},
             onCreate: function(table, data){ table.createLine(data._id, data); },
             onUpdate: function(table, id, data){ table.updateLine(data); },
@@ -207,12 +208,20 @@ $(document).ready(function() {
         if (this.settings.edit) {
             this.settings.update = this.settings.edit;
         }
+        // console.debug(this.settings);
 
         var weakThis = this;
 
-        this.serializeFormData = function(originalFormData) {
+        this.serializeFormData = function(originalFormData, htmlFields) {
+            htmlFields = htmlFields || [];
             var formData = {};
-            originalFormData.map(function(x){ formData[x.name] = htmlEscape(x.value); });
+            originalFormData.map(function(x) {
+                if ($.inArray(x.name, htmlFields) !== -1) {
+                    formData[x.name] = x.value;
+                } else {
+                    formData[x.name] = htmlEscape(x.value);
+                }
+            });
             return formData;
         }
 

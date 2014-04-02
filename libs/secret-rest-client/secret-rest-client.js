@@ -46,6 +46,9 @@ client.count();
             for (var i in keys) {
                 var key = keys[i];
                 var value = data[key];
+                if (typeof value == "string") {
+                    value = value.replace(/\s/g, "");
+                }
                 // console.debug(key.toLowerCase() + "=" + value);
                 dataPrepared.push(key.toLowerCase() + "=" + value);
             }
@@ -94,11 +97,18 @@ client.count();
         };
 
         // $(this).serializeArray();
-        this.serializeFormData = function(originalFormData) {
+        this.serializeFormData = function(originalFormData, htmlFields) {
+            htmlFields = htmlFields || [];
             var formData = {};
-            originalFormData.map(function(x){ formData[x.name] = htmlEscape(x.value); });
+            originalFormData.map(function(x) {
+                if ($.inArray(x.name, htmlFields) !== -1) {
+                    formData[x.name] = x.value;
+                } else {
+                    formData[x.name] = htmlEscape(x.value);
+                }
+            });
             return formData;
-        };
+        }
 
         this.list = function(initial, amount, success, error) {
             initial = initial || 0;
