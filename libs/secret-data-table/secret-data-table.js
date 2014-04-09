@@ -30,6 +30,7 @@ $(document).ready(function() {
         create: true,
         update: true,
         del: true,
+        log: false,
         onTableLoad: function(table){},
         onCreate: function(table, data){ table.createLine(new Date().getTime(), data); },
         onUpdate: function(table, id, data){ table.updateLine(id, data); },
@@ -183,6 +184,15 @@ $(document).ready(function() {
         return button;
     };
 
+    createLogButton = function(data) {
+        var button = $("<button/>").attr("type", "button").attr("class", "btn btn-default btn-xs").html('<span class="glyphicon glyphicon-edit"></span>');
+        var onclick = function() {
+            console.log(data);
+        };
+        button.click(onclick);
+        return button;
+    };
+
     var SecretDataTable = function(options) {
         this.settings = $.extend({
             table: null,
@@ -192,6 +202,7 @@ $(document).ready(function() {
             create: true,
             update: true,
             del: true,
+            log: false,
             htmlFields: [],
             onTableLoad: function(table){},
             onCreate: function(table, data){ table.createLine(data._id, data); },
@@ -253,6 +264,12 @@ $(document).ready(function() {
                 var form = createDeleteForm(weakThis, id, data);
                 var col = $("<td>");
                 col.append(form);
+                newRow.append(col);
+            }
+            if (weakThis.settings.log === true) {
+                var button = createLogButton(data);
+                var col = $("<td>");
+                col.append(button);
                 newRow.append(col);
             }
             weakThis.settings.table.find("tbody:last").append(newRow);
