@@ -59,11 +59,12 @@ def upload_to_s3(filename, bucket_name)
 end
 
 def minify_js(filename)
-  sh "uglifyjs #{filename}.js -o #{filename}.min.js --source-map #{filename}.min.js.map -p relative -c -m"
+  # sh "uglifyjs #{filename}.js -o #{filename}.min.js --source-map #{filename}.min.js.map -p relative -c -m"
+  sh "uglifyjs #{filename}.js -o #{filename}.min.js -p relative -c -m"
   return "#{filename}.min.js"
 end
 
-def compress_js(filename)
+def compress(filename)
   sh "gzip -9 #{filename}"
   sh "mv #{filename}.gz #{filename}"
   return "#{filename}"
@@ -73,8 +74,15 @@ def prepare_js(filename)
   if filename.end_with?(".js") and not filename.end_with?("min.js")
     filename = minify_js(filename.sub(".js", ""))
   end
-  if filename.end_with?(".js") or filename.end_with?(".css")
-    filename = compress_js(filename)
+  if filename.end_with?(".js")
+    filename = compress(filename)
+  end
+  return filename
+end
+
+def prepare_css(filename)
+  if filename.end_with?(".css")
+    filename = compress(filename)
   end
   return filename
 end
@@ -83,6 +91,8 @@ def upload_files_to_s3(files)
   files.each { |filename|
     if filename.end_with?(".js")
       filename = prepare_js(filename)
+    elsif filename.end_with?(".css")
+      filename = prepare_css(filename)
     end
     upload_to_s3(filename, "weblibraries")
   }
@@ -113,6 +123,7 @@ task :upload_rest_client => [] do
   files = [
     "libs/secret-rest-client/enc-base64.min.js",
     "libs/secret-rest-client/hmac-sha256.min.js",
+    "libs/secret-rest-client/jquery.form.min.js",
     "libs/secret-rest-client/secret-rest-client.js",
   ]
   upload_files_to_s3(files)
