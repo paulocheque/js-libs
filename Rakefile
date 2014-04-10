@@ -18,12 +18,21 @@ def colorize(text, color)
 end
 
 CONTENT_TYPES = {
+  ".js" => "application/x-javascript",
+  ".css" => "text/css",
+  ".map" => "application/octet-stream",
   ".png" => "image/png",
   ".jpg" => "image/jpeg",
   ".gif" => "image/gif",
-  ".js" => "application/x-javascript",
-  ".css" => "text/css",
-  ".map" => "application/octet-stream"
+}
+
+CONTENT_ENCODING = {
+  ".js" => "gzip",
+  ".css" => "gzip",
+  ".map" => nil,
+  ".gif" => nil,
+  ".jpg" => nil,
+  ".png" => nil,
 }
 
 def upload_to_s3(filename, bucket_name)
@@ -43,16 +52,41 @@ def upload_to_s3(filename, bucket_name)
   obj = bucket.objects[key]
   obj.write(:file => filename, :acl => :public_read,
       :cache_control => "max-age=31536000", :expires => "Thu, 31 Dec 2015 23:59:59 GM",
-      :content_type => CONTENT_TYPES[File.extname(filename)])
+      :content_type => CONTENT_TYPES[File.extname(filename)],
+      :content_encoding => CONTENT_ENCODING[File.extname(filename)])
   puts colorize("Upload finished", :green)
   puts colorize(obj.public_url, :blue)
 end
 
-def compress_js(filename)
+def minify_js(filename)
   sh "uglifyjs #{filename}.js -o #{filename}.min.js --source-map #{filename}.min.js.map -p relative -c -m"
   return "#{filename}.min.js"
 end
 
+def compress_js(filename)
+  sh "gzip -9 #{filename}"
+  sh "mv #{filename}.gz #{filename}"
+  return "#{filename}"
+end
+
+def prepare_js(filename)
+  if filename.end_with?(".js") and not filename.end_with?("min.js")
+    filename = minify_js(filename.sub(".js", ""))
+  end
+  if filename.end_with?(".js") or filename.end_with?(".css")
+    filename = compress_js(filename)
+  end
+  return filename
+end
+
+def upload_files_to_s3(files)
+  files.each { |filename|
+    if filename.end_with?(".js")
+      filename = prepare_js(filename)
+    end
+    upload_to_s3(filename, "weblibraries")
+  }
+end
 
 task :clean => [] do
   sh "rm -rf ~*"
@@ -75,25 +109,20 @@ task :dependencies => [:dev_env] do
   sh "rvm use ruby-1.9.3-p194" # aws-sdk is not working with Ruby 2.0.0
 end
 
-task :compress_libs_js do
-  files = ["libs/secret-rest-client/secret-rest-client", "libs/secret-data-table/secret-data-table"]
-  files.each { |filename|
-    compress_js(filename)
-  }
-end
-
-task :upload => [:compress_libs_js] do
+task :upload_rest_client => [] do
   files = [
     "libs/secret-rest-client/enc-base64.min.js",
     "libs/secret-rest-client/hmac-sha256.min.js",
-    "libs/secret-rest-client/secret-rest-client.min.js",
-    "libs/secret-rest-client/secret-rest-client.min.js.map",
-    "libs/secret-data-table/secret-data-table.min.js",
-    "libs/secret-data-table/secret-data-table.min.js.map",
+    "libs/secret-rest-client/secret-rest-client.js",
   ]
-  files.each { |filename|
-    upload_to_s3(filename, "weblibraries")
-  }
+  upload_files_to_s3(files)
+end
+
+task :upload_data_table => [] do
+  files = [
+    "libs/secret-data-table/secret-data-table.js",
+  ]
+  upload_files_to_s3(files)
 end
 
 task :upload_bootstrap => [] do
@@ -104,18 +133,31 @@ task :upload_bootstrap => [] do
     "libs/bootstrap/bootstrap.min.js",
     "libs/bootstrap/font-awesome.css",
   ]
-  files.each { |filename|
-    upload_to_s3(filename, "weblibraries")
-  }
+  upload_files_to_s3(files)
+end
+
+task :upload_all => [:upload_rest_client, :upload_data_table, :upload_bootstrap] do
+  files = [
+    "libs/ba-linkify.min.js",
+    "libs/bootstrap-maxlength.min.js",
+    "libs/jqBootstrapValidation.min.js",
+    "libs/jquery-2.0.3.min.js",
+    "libs/jquery.form.min.js",
+    "libs/jquery.maskedinput.min.js",
+    "libs/jquery.tablesorter.min.js",
+    "libs/moment.min.js",
+    "libs/pnotify/jquery.pnotify.default.css",
+    "libs/pnotify/jquery.pnotify.default.icons.css",
+    "libs/pnotify/jquery.pnotify.min.js",
+    "libs/jquery-ui/jquery-ui-1.10.4.custom.min.js",
+  ]
+  upload_files_to_s3(files)
 end
 
 task :upload_file => [] do
   # rake upload_file file=filepath
   filename = ENV["file"]
-  if filename.end_with?(".js") and not filename.end_with?("min.js")
-    filename = compress_js(filename.sub(".js", ""))
-  end
-  upload_to_s3(filename, "weblibraries")
+  upload_files_to_s3([filename])
 end
 
-task :default => [:compress_js]
+task :default => [:prepare_libs_js]
